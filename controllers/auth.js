@@ -1,7 +1,7 @@
 const { response, request } = require("express");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const Usuario = require("../models/usuario");
+const User = require("../models/user");
 const { generarJWT } = require("../helpers/generar-jwt");
 
 const login = async (req = request, res = response) => {
@@ -9,22 +9,22 @@ const login = async (req = request, res = response) => {
 
   try {
     
-    const usuario = await Usuario.findOne({ email });
-    if (!usuario) {
+    const user = await User.findOne({ email });
+    if (!user) {
       return res.status(400).json({
         msg: "Correo o Contraseña incorrectos",
       });
     }
 
     
-    if (!usuario.state) {
+    if (!user.status) {
       return res.status(400).json({
         msg: "Usuario no esta activo",
       });
     }
 
     
-    const validarPassword = bcryptjs.compareSync(password, usuario.password);
+    const validarPassword = bcryptjs.compareSync(password, user.password);
     if (!validarPassword) {
       return res.status(400).json({
         msg: "Correo o Contraseña incorrectos",
@@ -32,10 +32,10 @@ const login = async (req = request, res = response) => {
     }
 
     
-    const token = await generarJWT(usuario.id);
+    const token = await generarJWT(user.id);
 
     res.status(200).json({
-      usuario,
+      user,
       token,
     });
   } catch (error) {
@@ -47,7 +47,7 @@ const login = async (req = request, res = response) => {
 };
 
 const obtenerID = (req = request, res = response) => {
-  const { id, role } = req.usuario;
+  const { id, role } = req.user;
 
   res.json({
     id,

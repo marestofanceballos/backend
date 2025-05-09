@@ -1,5 +1,5 @@
 const { request, response } = require("express");
-const Usuario = require("../models/usuario");
+const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 
 const usuariosGet = async (req = request, res = response) => {
@@ -7,26 +7,26 @@ const usuariosGet = async (req = request, res = response) => {
   const query = { role: "USER_ROLE", state: true };
 
   const [total, usuarios] = await Promise.all([
-    Usuario.countDocuments(query),
-    Usuario.find(query).sort({ nombre: 1 }).limit(limite).skip(desde),
+    User.countDocuments(query),
+    User.find(query).sort({ nombre: 1 }).limit(limite).skip(desde),
   ]);
 
   res.status(200).json({
     total,
-    usuarios,
+    User,
   });
 };
 
 const usuarioPost = async (req = request, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, surname } = req.body;
 
-  const usuario = new Usuario({ name, email, password, role });
+  const usuario = new User({ name, email, password, role, surname });
 
   
-  const existeEmail = await Usuario.findOne({ email });
+  const existeEmail = await User.findOne({ email });
   if (existeEmail) {
     return res.status(400).json({
-      msg: El correo ${email} ya está registrado,
+      msg: `El correo ${email} ya está registrado`,
     });
   }
 
@@ -44,12 +44,12 @@ const usuarioPost = async (req = request, res) => {
 
 const usuarioPut = async (req, res) => {
   const { id } = req.params;
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, surname } = req.body;
 
-  const existeEmail = await Usuario.findOne({ email, _id: { $ne: id } });
+  const existeEmail = await User.findOne({ email, _id: { $ne: id } });
   if (existeEmail) {
     return res.status(400).json({
-      msg: El correo ${email} ya está registrado para otro usuario,
+      msg: `El correo ${email} ya está registrado para otro usuario`,
     });
   }
 
@@ -73,7 +73,7 @@ const usuarioPut = async (req, res) => {
     role: updatedRole,
   };
 
-  const usuario = await Usuario.findByIdAndUpdate(id, data, { new: true });
+  const usuario = await User.findByIdAndUpdate(id, data, { new: true });
 
   res.status(200).json({
     message: "Usuario actualizado",
@@ -86,7 +86,7 @@ const usuarioDelete = async (req, res) => {
 
   
 
-  const usuarioBorrado = await Usuario.findByIdAndUpdate(
+  const usuarioBorrado = await User.findByIdAndUpdate(
     id,
     {
       state: false,
