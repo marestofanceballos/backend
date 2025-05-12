@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 
 const usuariosGet = async (req = request, res = response) => {
   const { limite = 5, desde = 0 } = req.query;
-  const query = { role: "USER_ROLE", state: true };
+  const query = { role: "USER_ROLE", status: true };
 
   const [total, usuarios] = await Promise.all([
     User.countDocuments(query),
@@ -53,7 +53,7 @@ const usuarioPut = async (req, res) => {
     });
   }
 
-  const usuarioActual = await Usuario.findById(id);
+  const usuarioActual = await User.findById(id);
 
   if (password && password.length < 8) {
     return res.status(400).json({
@@ -84,21 +84,38 @@ const usuarioPut = async (req, res) => {
 const usuarioDelete = async (req, res) => {
   const { id } = req.params;
 
-  
+  try {
+    // Obtener usuario actual
+    const usuario = await User.findById(id);
 
-  const usuarioBorrado = await User.findByIdAndUpdate(
-    id,
-    {
-      state: false,
-    },
-    { new: true }
-  );
+    if (!usuario) {
+      return res.status(404).json({
+        msg: 'Usuario no encontrado',
+      });
+    }
 
-  res.status(200).json({
-    message: "Usuario eliminado",
-    usuarioBorrado,
-  });
+    // Alternar el estado
+    const nuevoEstado = !usuario.status;
+
+    const usuarioActualizado = await User.findByIdAndUpdate(
+      id,
+      { status: nuevoEstado },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: `Usuario ${nuevoEstado ? 'activado' : 'eliminado'}`,
+      usuario: usuarioActualizado,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      msg: 'Error al actualizar el estado del usuario',
+    });
+  }
 };
+
 
 module.exports = {
   usuariosGet,
