@@ -3,17 +3,14 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 
 const usuariosGet = async (req = request, res = response) => {
-  const { limite = 5, desde = 0 } = req.query;
-  const query = { role: "USER_ROLE", status: true };
-
-  const [total, usuarios] = await Promise.all([
-    User.countDocuments(query),
-    User.find(query).sort({ nombre: 1 }).limit(limite).skip(desde),
+  const [total, users] = await Promise.all([
+    User.countDocuments(),
+    User.find().sort({ name: 1 }).select("-password"),
   ]);
 
   res.status(200).json({
     total,
-    User,
+    users,
   });
 };
 
@@ -22,7 +19,6 @@ const usuarioPost = async (req = request, res) => {
 
   const usuario = new User({ name, email, password, role, surname });
 
-  
   const existeEmail = await User.findOne({ email });
   if (existeEmail) {
     return res.status(400).json({
@@ -33,12 +29,11 @@ const usuarioPost = async (req = request, res) => {
   const salt = bcrypt.genSaltSync();
   usuario.password = bcrypt.hashSync(password, salt);
 
-
   await usuario.save();
 
   res.status(201).json({
     message: "Usuario creado",
-    usuario, 
+    usuario,
   });
 };
 
@@ -62,10 +57,12 @@ const usuarioPut = async (req, res) => {
   }
 
   const salt = bcrypt.genSaltSync();
-  const hashedPassword = password ? bcrypt.hashSync(password, salt) : usuarioActual.password;
-  
-  const updatedRole = role || usuarioActual.role; 
-  
+  const hashedPassword = password
+    ? bcrypt.hashSync(password, salt)
+    : usuarioActual.password;
+
+  const updatedRole = role || usuarioActual.role;
+
   let data = {
     name: name || usuarioActual.name,
     email,
@@ -90,7 +87,7 @@ const usuarioDelete = async (req, res) => {
 
     if (!usuario) {
       return res.status(404).json({
-        msg: 'Usuario no encontrado',
+        msg: "Usuario no encontrado",
       });
     }
 
@@ -104,22 +101,36 @@ const usuarioDelete = async (req, res) => {
     );
 
     res.status(200).json({
-      message: `Usuario ${nuevoEstado ? 'activado' : 'eliminado'}`,
+      message: `Usuario ${nuevoEstado ? "activado" : "eliminado"}`,
       usuario: usuarioActualizado,
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      msg: 'Error al actualizar el estado del usuario',
+      msg: "Error al actualizar el estado del usuario",
     });
   }
 };
 
+const usuarioGet = async (req = request, res = response) => {
+  const { id } = req.params;
+
+  const usuario = await User.findById(id).select("-password");
+  if (!usuario) {
+    return res.status(404).json({
+      msg: "Usuario no encontrado",
+    });
+  }
+
+  res.status(200).json({
+    usuario,
+  });
+};
 
 module.exports = {
   usuariosGet,
   usuarioPost,
   usuarioPut,
   usuarioDelete,
+  usuarioGet,
 };

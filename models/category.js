@@ -10,9 +10,9 @@ const CategorySchema = Schema({
     type: Boolean,
     default: true,
   },
-  usuario: {
+  user: {
     type: Schema.Types.ObjectId,
-    ref: "Usuario",
+    ref: "User",
     required: true,
   },
 });

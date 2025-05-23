@@ -11,6 +11,7 @@ const {
 
 const {
   usuariosGet,
+  usuarioGet,
   usuarioPost,
   usuarioPut,
   usuarioDelete,
@@ -26,6 +27,17 @@ router.get(
     tieneRol("ADMIN_ROLE", "GERENTE"),
   ],
   usuariosGet
+);
+
+router.get(
+  "/:id",
+  [
+    validarJWT,
+    check("id", "No es un Id válido").isMongoId(),
+    check("id").custom(existeUsuarioPorId),
+    validarCampos,
+  ],
+  usuarioGet
 );
 
 router.post(

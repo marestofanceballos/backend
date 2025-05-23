@@ -26,6 +26,24 @@ const UserSchema = Schema({
     type: Boolean,
     default: true,
   },
+  img: {
+    type: String,
+  },
+  cartshop: [
+    {
+      product: {
+        type: Schema.Types.ObjectId,
+        ref: "Product",
+        required: true,
+      },
+      cantidad: {
+        type: Number,
+        required: true,
+        default: 1,
+      },
+      // Puedes agregar más campos si lo necesitas (por ejemplo, precio al momento de la compra)
+    },
+  ],
 });
 
 UserSchema.methods.toJSON = function () {

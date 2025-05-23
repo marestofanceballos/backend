@@ -10,14 +10,14 @@ const ProductSchema = Schema({
     type: Boolean,
     default: true,
   },
-  usuario: {
+  user: {
     type: Schema.Types.ObjectId,
-    ref: "Usuario",
+    ref: "User",
     required: true,
   },
-  categoria: {
+  category: {
     type: Schema.Types.ObjectId,
-    ref: "Categoria",
+    ref: "Category",
     required: true,
   },
   precio: {

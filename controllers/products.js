@@ -1,17 +1,12 @@
 const { response, request } = require("express");
 const Product = require("../models/product");
 
-
 const obtenerProductos = async (req = request, res = response) => {
-  const { limite = 5, desde = 0 } = req.query;
-
   try {
     const [total, Products] = await Promise.all([
       Product.countDocuments(),
       Product.find()
         .sort({ nombre: 1 })
-        .skip(Number(desde))
-        .limit(Number(limite))
         .populate("category", "nombre")
         .populate("user", "name"),
     ]);
@@ -28,16 +23,15 @@ const obtenerProductos = async (req = request, res = response) => {
   }
 };
 
-
 const obtenerProducto = async (req = request, res = response) => {
   const { id } = req.params;
 
-  const Product = await Product.findById(id)
+  const producto = await Product.findById(id)
     .populate("category", "nombre")
     .populate("user", "name");
 
   res.json({
-    Product,
+    producto,
   });
 };
 
@@ -53,7 +47,7 @@ const ProductoPost = async (req, res) => {
       msg: `El Producto ${ProductDB.nombre} ya existe`,
     });
   }
-  
+
   const data = {
     nombre,
     categoria,
@@ -65,7 +59,7 @@ const ProductoPost = async (req, res) => {
   };
 
   const product = new Product(data);
-  
+
   await product.save();
 
   res.status(201).json({
@@ -73,8 +67,6 @@ const ProductoPost = async (req, res) => {
     product,
   });
 };
-
-
 
 const actualizarProducto = async (req, res) => {
   const { id } = req.params;
@@ -101,47 +93,45 @@ const actualizarProducto = async (req, res) => {
     data.img = req.body.img;
   }
 
-  const Product = await Product.findByIdAndUpdate(id, data, { new: true })
+  const product = await Product.findByIdAndUpdate(id, data, { new: true })
     .populate("category", "nombre")
     .populate("user", "name");
 
-  res.status(200).json(Product);
+  res.status(200).json(product);
 };
-
 
 const borrarProducto = async (req, res) => {
   const { id } = req.params;
 
   try {
-      // Obtener producto actual
-      const product = await Product.findById(id);
-  
-      if (!product) {
-        return res.status(404).json({
-          msg: 'Producto no encontrado',
-        });
-      }
-  
-      // Alternar el estado
-      const nuevoEstado = !product.estado;
-  
-      const productoActualizado = await Product.findByIdAndUpdate(
-        id,
-        { estado: nuevoEstado },
-        { new: true }
-      );
-  
-      res.status(200).json({
-        message: `Producto ${nuevoEstado ? 'activado' : 'eliminado'}`,
-        producto: productoActualizado,
-      });
-  
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({
-        msg: 'Error al actualizar el estado del producto',
+    // Obtener producto actual
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({
+        msg: "Producto no encontrado",
       });
     }
+
+    // Alternar el estado
+    const nuevoEstado = !product.estado;
+
+    const productoActualizado = await Product.findByIdAndUpdate(
+      id,
+      { estado: nuevoEstado },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: `Producto ${nuevoEstado ? "activado" : "eliminado"}`,
+      producto: productoActualizado,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      msg: "Error al actualizar el estado del producto",
+    });
+  }
 };
 
 module.exports = {
