@@ -36,7 +36,7 @@ router.post(
     validarJWT,
     esAdminRole,
     check("nombre", "El nombre es obligatorio").notEmpty(),
-    check("categoria", "La categoría es obligatoria").notEmpty(),
+    check("category", "La categoría es obligatoria").notEmpty(),
     validarCampos,
   ],
   ProductoPost

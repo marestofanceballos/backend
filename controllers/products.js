@@ -36,7 +36,9 @@ const obtenerProducto = async (req = request, res = response) => {
 };
 
 const ProductoPost = async (req, res) => {
-  const { precio, categoria, descripcion, img, stock } = req.body;
+  const { precio, category, descripcion, img, stock } = req.body;
+
+   const user = req.usuario._id;
 
   const nombre = req.body.nombre.toUpperCase();
 
@@ -50,12 +52,12 @@ const ProductoPost = async (req, res) => {
 
   const data = {
     nombre,
-    categoria,
+    category,
     precio,
     descripcion,
     img,
     stock,
-    usuario: req.usuario._id,
+    user
   };
 
   const product = new Product(data);
