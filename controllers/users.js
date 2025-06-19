@@ -39,7 +39,7 @@ const usuarioPost = async (req = request, res) => {
 
 const usuarioPut = async (req, res) => {
   const { id } = req.params;
-  const { name, email, password, role, surname, img } = req.body;
+  const { name, email, password, role, surname, img, cartshop } = req.body;
 
   const existeEmail = await User.findOne({ email, _id: { $ne: id } });
   if (existeEmail) {
@@ -69,14 +69,21 @@ const usuarioPut = async (req, res) => {
     password: hashedPassword,
     role: updatedRole,
   };
-  
-  // Añadir surname e img si vienen en la petición
+
   if (surname !== undefined) {
     data.surname = surname;
   }
-  
+
   if (img !== undefined) {
     data.img = img;
+  }
+
+  // Validar y agregar cartshop si viene en la petición
+  if (Array.isArray(cartshop)) {
+    const validCartshop = cartshop.filter(item =>
+      item.product && item.cantidad && typeof item.cantidad === "number"
+    );
+    data.cartshop = validCartshop;
   }
 
   const usuario = await User.findByIdAndUpdate(id, data, { new: true });
@@ -86,6 +93,7 @@ const usuarioPut = async (req, res) => {
     usuario,
   });
 };
+
 
 const usuarioDelete = async (req, res) => {
   const { id } = req.params;
